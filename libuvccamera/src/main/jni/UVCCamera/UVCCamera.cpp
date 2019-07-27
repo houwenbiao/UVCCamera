@@ -137,15 +137,18 @@ void UVCCamera::clearCameraParams() {
 int UVCCamera::connect(int vid, int pid, int fd, int busnum, int devaddr, const char *usbfs) {
 	ENTER();
 	uvc_error_t result = UVC_ERROR_BUSY;
+	LOGD("UVCCamera::connect libusb-----------1------------");
 	if (!mDeviceHandle && fd) {
+	LOGD("UVCCamera::connect libusb-----------2------------");
 		if (mUsbFs)
+		LOGD("UVCCamera::connect libusb-----------3------------");
 			free(mUsbFs);
 		mUsbFs = strdup(usbfs);
 		if (UNLIKELY(!mContext)) {
 			result = uvc_init2(&mContext, NULL, mUsbFs);
 //			libusb_set_debug(mContext->usb_ctx, LIBUSB_LOG_LEVEL_DEBUG);
 			if (UNLIKELY(result < 0)) {
-				LOGD("failed to init libuvc");
+				LOGD("failed to init libuvc------libusb");
 				RETURN(result, int);
 			}
 		}

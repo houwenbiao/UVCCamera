@@ -53,7 +53,7 @@ import com.serenegiant.utils.HandlerThreadHandler;
 
 public final class USBMonitor {
 
-    private static final boolean DEBUG = false;    // TODO set false on production
+    private static final boolean DEBUG = true;    // TODO set false on production
     private static final String TAG = "USBMonitor";
 
     private static final String ACTION_USB_PERMISSION_BASE = "com.serenegiant.USB_PERMISSION.";
@@ -1005,6 +1005,11 @@ public final class USBMonitor {
             }
             if ((manager != null) && manager.hasPermission(device)) {
                 final UsbDeviceConnection connection = manager.openDevice(device);
+                if (connection == null) {
+                    Log.e(TAG, "UsbDeviceConnection is null, openDevice err" + device.getProductName());
+                    return null;
+                }
+
                 final byte[] desc = connection.getRawDescriptors();
 
                 if (TextUtils.isEmpty(info.usb_version)) {
@@ -1094,15 +1099,15 @@ public final class USBMonitor {
             }
             mBusNum = busnum;
             mDevNum = devnum;
-//			if (DEBUG) {
-            if (mConnection != null) {
-                final int desc = mConnection.getFileDescriptor();
-                final byte[] rawDesc = mConnection.getRawDescriptors();
-                Log.i(TAG, String.format(Locale.US, "name=%s,desc=%d,busnum=%d,devnum=%d,rawDesc=", name, desc, busnum, devnum) + rawDesc);
-            } else {
-                Log.e(TAG, "could not connect to device " + name);
+            if (DEBUG) {
+                if (mConnection != null) {
+                    final int desc = mConnection.getFileDescriptor();
+                    final byte[] rawDesc = mConnection.getRawDescriptors();
+                    Log.i(TAG, String.format(Locale.US, "name=%s,desc=%d,busnum=%d,devnum=%d,rawDesc=", name, desc, busnum, devnum) + rawDesc);
+                } else {
+                    Log.e(TAG, "could not connect to device " + name);
+                }
             }
-//			}
         }
 
         /**

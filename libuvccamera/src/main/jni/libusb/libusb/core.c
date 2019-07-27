@@ -24,10 +24,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define LOCAL_DEBUG 0
+#define LOCAL_DEBUG 1
 
 #define LOG_TAG "libusb/core"
-#if 1	// デバッグ情報を出さない時1
+#if 0	// デバッグ情報を出さない時1
 	#ifndef LOG_NDEBUG
 		#define	LOG_NDEBUG		// LOGV/LOGD/MARKを出力しない時
 		#endif
@@ -2187,7 +2187,7 @@ err_unlock:
  * \see contexts
  */
 int API_EXPORTED libusb_init(libusb_context **context) {
-
+    usbi_dbg("created default context ****************************libusb_init");
 	return libusb_init2(context, NULL);
 #if 0
 	struct libusb_device *dev, *next;

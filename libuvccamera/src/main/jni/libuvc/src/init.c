@@ -121,7 +121,7 @@ void *_uvc_handle_events(void *arg) {
 uvc_error_t uvc_init2(uvc_context_t **pctx, struct libusb_context *usb_ctx, const char *usbfs) {
 	uvc_error_t ret = UVC_SUCCESS;
 	uvc_context_t *ctx = calloc(1, sizeof(*ctx));
-
+    LOGD("call #libusb_init2----------------------------");
 	if (usb_ctx == NULL) {
 		if (usbfs && strlen(usbfs) > 0) {
 			LOGD("call #libusb_init2");
@@ -137,6 +137,7 @@ uvc_error_t uvc_init2(uvc_context_t **pctx, struct libusb_context *usb_ctx, cons
 			ctx = NULL;
 		}
 	} else {
+	    LOGD("call #libusb_init2  else");
 		ctx->own_usb_ctx = 0;
 		ctx->usb_ctx = usb_ctx;
 	}

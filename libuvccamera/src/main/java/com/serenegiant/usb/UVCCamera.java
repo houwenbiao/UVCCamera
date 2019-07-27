@@ -44,10 +44,10 @@ public class UVCCamera {
     private static final String TAG = UVCCamera.class.getSimpleName();
     private static final String DEFAULT_USBFS = "/dev/bus/usb";
 
-    //	public static final int DEFAULT_PREVIEW_WIDTH = 640;
-//	public static final int DEFAULT_PREVIEW_HEIGHT = 480;
-    public static final int DEFAULT_PREVIEW_WIDTH = 160;
-    public static final int DEFAULT_PREVIEW_HEIGHT = 120;
+    public static final int DEFAULT_PREVIEW_WIDTH = 640;
+    public static final int DEFAULT_PREVIEW_HEIGHT = 480;
+    //    public static final int DEFAULT_PREVIEW_WIDTH = 160;
+//    public static final int DEFAULT_PREVIEW_HEIGHT = 120;
     public static final int DEFAULT_PREVIEW_MODE = 0;
     public static final int DEFAULT_PREVIEW_MIN_FPS = 1;
 //    public static final int DEFAULT_PREVIEW_MAX_FPS = 30;
@@ -55,7 +55,7 @@ public class UVCCamera {
     public static final int DEFAULT_PREVIEW_MAX_FPS = 240;
     public static final float DEFAULT_BANDWIDTH = 1.0f;
 
-    public static final int FRAME_FORMAT_YUYV = 2;
+    public static final int FRAME_FORMAT_YUYV = 0;
     public static final int FRAME_FORMAT_MJPEG = 1;
 
     public static final int PIXEL_FORMAT_RAW = 0;
@@ -64,6 +64,7 @@ public class UVCCamera {
     public static final int PIXEL_FORMAT_RGBX = 3;
     public static final int PIXEL_FORMAT_YUV420SP = 4;
     public static final int PIXEL_FORMAT_NV21 = 5;        // = YVU420SemiPlanar
+    public static final int PIXEL_FORMAT_I420 = 6;
 
     //--------------------------------------------------------------------------------
     public static final int CTRL_SCANNING = 0x00000001;    // D0:  Scanning Mode
@@ -120,6 +121,7 @@ public class UVCCamera {
     private static boolean isLoaded;
 
     static {
+        Log.i("libusb", "libusb load");
         if (!isLoaded) {
             System.loadLibrary("jpeg-turbo1500");
             System.loadLibrary("usb100");
@@ -197,6 +199,14 @@ public class UVCCamera {
         int result;
         try {
             mCtrlBlock = ctrlBlock.clone();
+//            mCtrlBlock = ctrlBlock;
+            Log.i(TAG + "----------",
+                    "mNativePtr:" + mNativePtr +
+                            ", VenderId:" + mCtrlBlock.getVenderId() +
+                            ", ProductId:" + mCtrlBlock.getProductId() +
+                            ", BusNum:" + mCtrlBlock.getBusNum() +
+                            ", DevNum:" + mCtrlBlock.getDevNum());
+            Log.i(TAG + "-----------", ", FileDes:" + mCtrlBlock.getFileDescriptor());
             result = nativeConnect(mNativePtr,
                     mCtrlBlock.getVenderId(), mCtrlBlock.getProductId(),
                     mCtrlBlock.getFileDescriptor(),
@@ -208,7 +218,8 @@ public class UVCCamera {
             result = -1;
         }
         if (result != 0) {
-            throw new UnsupportedOperationException("open failed:result=" + result);
+            Log.e(TAG, "open failed:result=" + result + ", device:" + mCtrlBlock.getDevice().getProductName());
+//            throw new UnsupportedOperationException("open failed:result=" + result + ", device:" + mCtrlBlock.getDevice().getProductName());
         }
         if (mNativePtr != 0 && TextUtils.isEmpty(mSupportedSize)) {
             mSupportedSize = nativeGetSupportedSize(mNativePtr);

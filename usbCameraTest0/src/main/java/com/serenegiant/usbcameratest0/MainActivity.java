@@ -24,8 +24,12 @@
 package com.serenegiant.usbcameratest0;
 
 import android.hardware.usb.UsbDevice;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -36,10 +40,18 @@ import android.widget.Toast;
 
 import com.serenegiant.common.BaseActivity;
 import com.serenegiant.usb.CameraDialog;
+import com.serenegiant.usb.DeviceFilter;
+import com.serenegiant.usb.IFrameCallback;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
 import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.usb.UVCCamera;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class MainActivity extends BaseActivity implements CameraDialog.CameraDialogParent {
     private static final boolean DEBUG = true;    // TODO set false when production
@@ -54,6 +66,10 @@ public class MainActivity extends BaseActivity implements CameraDialog.CameraDia
     private ImageButton mCameraButton;
     private Surface mPreviewSurface;
     private boolean isActive, isPreview;
+    private int previewWidth = 160;
+    private int previewHeight = 120;
+    private int previewMode = UVCCamera.FRAME_FORMAT_YUYV;//YUYV
+
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -66,6 +82,9 @@ public class MainActivity extends BaseActivity implements CameraDialog.CameraDia
         mUVCCameraView.getHolder().addCallback(mSurfaceViewCallback);
 
         mUSBMonitor = new USBMonitor(this, mOnDeviceConnectListener);
+        final List<DeviceFilter> filters = DeviceFilter.getDeviceFilters(MainActivity.this, R.xml.device_filter);
+        mUSBMonitor.setDeviceFilter(filters);
+
     }
 
     @Override
@@ -132,12 +151,13 @@ public class MainActivity extends BaseActivity implements CameraDialog.CameraDia
     };
 
     private final OnDeviceConnectListener mOnDeviceConnectListener = new OnDeviceConnectListener() {
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onAttach(final UsbDevice device) {
             if (DEBUG) {
-                Log.v(TAG, "onAttach:");
+                Log.v(TAG, "onAttach, DeviceName" + device.getDeviceName() + ", ProductName:" + device.getProductName());
             }
-            Toast.makeText(MainActivity.this, "USB_DEVICE_ATTACHED", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "USB_DEVICE_ATTACHED, DeviceName" + device.getDeviceName() + ", ProductName:" + device.getProductName(), Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -156,15 +176,21 @@ public class MainActivity extends BaseActivity implements CameraDialog.CameraDia
                 public void run() {
                     synchronized (mSync) {
                         final UVCCamera camera = new UVCCamera();
-                        camera.open(ctrlBlock);
+                        Log.i(TAG, device.toString());
+                        try {
+                            camera.open(ctrlBlock);
+                        } catch (Exception e) {
+                            Log.i(TAG, e.toString());
+                        }
                         if (DEBUG) {
                             Log.i(TAG, "supportedSize:" + camera.getSupportedSize());
                         }
                         try {
-                            camera.setPreviewSize(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_YUYV);
+                            camera.setPreviewSize(previewWidth, previewHeight, previewMode);
                         } catch (final IllegalArgumentException e) {
                             try {
                                 // fallback to YUV mode
+                                Log.i(TAG, "fallback to YUV mode");
                                 camera.setPreviewSize(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.DEFAULT_PREVIEW_MODE);
                             } catch (final IllegalArgumentException e1) {
                                 camera.destroy();
