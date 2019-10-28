@@ -180,7 +180,7 @@ public class MainActivity extends BaseActivity implements CameraDialog.CameraDia
                         try {
                             camera.open(ctrlBlock);
                         } catch (Exception e) {
-                            Log.i(TAG, e.toString());
+                            Log.e(TAG, "open camera err, " + e.toString());
                         }
                         if (DEBUG) {
                             Log.i(TAG, "supportedSize:" + camera.getSupportedSize());
